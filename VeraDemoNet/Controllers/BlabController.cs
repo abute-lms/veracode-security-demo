@@ -4,6 +4,7 @@ using System.Data.Common;
 using System.Data.SqlClient;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web.Mvc;
 using VeraDemoNet.Commands;
 using VeraDemoNet.DataAccess;
@@ -149,7 +150,7 @@ namespace VeraDemoNet.Controllers
                     var post = new Blab
                     {
                         Id = blabsForMeResults.GetInt32(5),
-                        Content = blabsForMeResults.GetString(2),
+                        Content = Server.HtmlEncode(blabsForMeResults.GetString(2)),
                         PostDate = blabsForMeResults.GetDateTime(3),
                         CommentCount = blabsForMeResults.GetInt32(4),
                         Author = author
@@ -174,7 +175,7 @@ namespace VeraDemoNet.Controllers
                     var post = new Blab
                     {
                         Id = blabsByMeResults.GetInt32(3),
-                        Content = blabsByMeResults.GetString(0),
+                        Content = Server.HtmlEncode(blabsByMeResults.GetString(0)),
                         PostDate = blabsByMeResults.GetDateTime(1),
                         CommentCount = blabsByMeResults.GetInt32(2),
                     };
@@ -201,15 +202,27 @@ namespace VeraDemoNet.Controllers
             }
 
             var username = GetLoggedInUsername();
-            
-            using (var dbContext = new BlabberDB())
+            try
             {
-                dbContext.Database.Connection.Open();
-                dbContext.Database.ExecuteSqlCommand(sqlAddBlab, 
-                    new SqlParameter{ParameterName = "@username", Value = username},
-                    new SqlParameter{ParameterName = "@blabcontents", Value = blab},
-                    new SqlParameter{ParameterName = "@timestamp", Value = DateTime.Now});
+                //check if blab is a string that contains only alphanumeric and punctuation 
+                if (!Regex.IsMatch(blab, "^[a-zA-Z0-9_. '?!\"]*$"))
+                {
+                    throw new Exception("Blab is not valid");
+                }
+
+                using (var dbContext = new BlabberDB())
+                {
+                    dbContext.Database.Connection.Open();
+                    dbContext.Database.ExecuteSqlCommand(sqlAddBlab,
+                        new SqlParameter { ParameterName = "@username", Value = username },
+                        new SqlParameter { ParameterName = "@blabcontents", Value = blab },
+                        new SqlParameter { ParameterName = "@timestamp", Value = DateTime.Now });
+                }
+            }catch(Exception ex)
+            {
+                logger.Error(ex);
             }
+            
 
             return RedirectToAction("Feed");
         }
