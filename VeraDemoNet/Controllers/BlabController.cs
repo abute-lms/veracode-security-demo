@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -14,6 +15,8 @@ namespace VeraDemoNet.Controllers
 {
     public class BlabController : AuthControllerBase
     {
+        private readonly static List<string> whiteListedCommands = new List<string> { "ignore", "listen" };
+
         protected readonly log4net.ILog logger;
 
         private string sqlBlabsByMe = 
@@ -308,6 +311,13 @@ namespace VeraDemoNet.Controllers
             }
 
             var username = GetLoggedInUsername();
+
+            if(!whiteListedCommands.Contains(command, StringComparer.OrdinalIgnoreCase))
+            {
+                logger.Error($"Command not allowed: {command}");
+
+                return View(PopulateBlabbersViewModel("blab_name ASC", username));
+            }
 
             try
             {
