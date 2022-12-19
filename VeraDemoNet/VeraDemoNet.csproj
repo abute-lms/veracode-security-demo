@@ -169,6 +169,7 @@
     <Compile Include="Commands\IgnoreCommand.cs" />
     <Compile Include="Commands\ListenCommand.cs" />
     <Compile Include="Commands\RemoveAccountCommand.cs" />
+    <Compile Include="Constants.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Commands\BlabberCommandBase.cs" />
     <Compile Include="Controllers\AuthControllerBase.cs" />

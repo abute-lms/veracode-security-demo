@@ -97,7 +97,7 @@ namespace VeraDemoNet.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    if(!Regex.IsMatch(loginViewModel.UserName, "^[a-zA-Z0-9._@#$% ]+$"))
+                    if(!Regex.IsMatch(loginViewModel.UserName, Constants.RegularExpression.UsernameRegex))
                     {
                         ModelState.AddModelError("CustomError", "Something Wrong : UserName or Password invalid ^_^ ");
                         return View(loginViewModel);
@@ -454,6 +454,12 @@ namespace VeraDemoNet.Controllers
 
             Session["username"] = username;
 
+            if(!Regex.IsMatch(username, Constants.RegularExpression.UsernameRegex))
+            {
+                registerViewModel.Error = "Username '" + username + "' is not valid!";
+                return View(registerViewModel);
+            }
+
             var sql = "SELECT count(*) FROM users WHERE username = @username";
             using (var dbContext = new BlabberDB())
             {
@@ -490,14 +496,14 @@ namespace VeraDemoNet.Controllers
         private List<string> RetrieveMyEvents(DbConnection connect, string username)
         {
             // START BAD CODE
-            var sqlMyEvents = "select event from users_history where blabber='" + 
-                              username + "' ORDER BY eventid DESC; ";
+            var sqlMyEvents = "select event from users_history where blabber=@username ORDER BY eventid DESC; ";
             logger.Info(sqlMyEvents);
             
             var myEvents = new List<string>();
             using (var eventsCommand = connect.CreateCommand())
             {
                 eventsCommand.CommandText = sqlMyEvents;
+                eventsCommand.Parameters.Add(new SqlParameter("username", username));
                 using (var userHistoryResult = eventsCommand.ExecuteReader())
                 {
                     while (userHistoryResult.Read())
