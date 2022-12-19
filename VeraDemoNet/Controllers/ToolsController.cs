@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Web.Hosting;
@@ -54,10 +56,14 @@ namespace VeraDemoNet.Controllers
             var output = new StringBuilder();
             try
             {
-                // START BAD CODE
+                if(!Uri.IsWellFormedUriString(host, UriKind.RelativeOrAbsolute))
+                {
+                    throw new Exception("Invalid host");
+                }
+
                 var fileName = "cmd.exe";
                 var arguments = "/c ping " + host;
-                // END BAD CODE
+                
 
                 var proc = CreateStdOutProcess(fileName, arguments);
 
@@ -88,10 +94,16 @@ namespace VeraDemoNet.Controllers
 
             try
             {
-                // START BAD CODE
+                var whitelistFortune = new List<string> { "funny.txt", "offensive.txt" };
+
+                if(!whitelistFortune.Any(x=>x.ToLowerInvariant() == fortuneFile.ToLowerInvariant()))
+                {
+                    throw new Exception("Invalid fortune file");
+                }
+                
                 var fileName = "cmd.exe";
                 var arguments = "/c " + HostingEnvironment.MapPath("~/Resources/bin/fortune-go.exe") + " " + HostingEnvironment.MapPath("~/Resources/bin/" + fortuneFile);
-                // END BAD CODE
+                
 
                 var proc = CreateStdOutProcess(fileName, arguments);
 
