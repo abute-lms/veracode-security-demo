@@ -9,6 +9,7 @@ using System.Net;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Hosting;
 using System.Web.Mvc;
@@ -96,6 +97,11 @@ namespace VeraDemoNet.Controllers
             {
                 if (ModelState.IsValid)
                 {
+                    if(!Regex.IsMatch(loginViewModel.UserName, "^[a-zA-Z0-9._@#$% ]+$"))
+                    {
+                        ModelState.AddModelError("CustomError", "Something Wrong : UserName or Password invalid ^_^ ");
+                        return View(loginViewModel);
+                    }
                     var userDetails = LoginUser(loginViewModel.UserName, loginViewModel.Password);
 
                     using (EventLog eventLog = new EventLog("Application"))
