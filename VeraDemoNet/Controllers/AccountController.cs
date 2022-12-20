@@ -558,23 +558,30 @@ namespace VeraDemoNet.Controllers
         }
 
         [HttpPost, ActionName("RegisterFinish")]
-        public ActionResult PostRegisterFinish(User user, string cpassword)
+        public ActionResult PostRegisterFinish([Bind(Include = " UserName, RealName, BlabName")] RegisterViewModel userViewModel, 
+            string password, string cpassword)
         {
-            if (user.Password != cpassword)
+            if (password != cpassword)
             {
                 logger.Info("Password and Confirm Password do not match");
                 return View(new RegisterViewModel
                 {
                     Error = "The Password and Confirm Password values do not match. Please try again.",
-                    UserName = user.UserName,
-                    RealName = user.RealName,
-                    BlabName = user.BlabName,
+                    UserName = userViewModel.UserName,
+                    RealName = userViewModel.RealName,
+                    BlabName = userViewModel.BlabName,
                 });
             }
 
             // Use the user class to get the hashed password.
-            user.Password = Md5Hash(user.Password);
-            user.CreatedAt = DateTime.Now;
+            var user = new User
+            {
+                Password = Md5Hash(password),
+                UserName = userViewModel.UserName,
+                RealName = userViewModel.RealName,
+                BlabName = userViewModel.BlabName,
+                CreatedAt = DateTime.Now
+            };
             
             using (var dbContext = new BlabberDB())
             {
@@ -585,7 +592,7 @@ namespace VeraDemoNet.Controllers
             var imageDir = HostingEnvironment.MapPath("~/Images/");
             try
             {
-                System.IO.File.Copy(Path.Combine(imageDir, "default_profile.png"), Path.Combine(imageDir, user.UserName) + ".png");
+                System.IO.File.Copy(Path.Combine(imageDir, "default_profile.png"), Path.Combine(imageDir, userViewModel.UserName) + ".png");
             }
             catch (Exception ex)
             {
@@ -595,7 +602,7 @@ namespace VeraDemoNet.Controllers
 
             //EmailUser(userName);
 
-            return RedirectToAction("Login", "Account", new LoginView {UserName = user.UserName});
+            return RedirectToAction("Login", "Account", new LoginView {UserName = userViewModel.UserName});
         }
     }
 }
