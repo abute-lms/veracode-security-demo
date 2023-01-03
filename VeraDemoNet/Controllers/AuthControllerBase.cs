@@ -19,12 +19,11 @@ namespace VeraDemoNet.Controllers
             using (var dbContext = new BlabberDB())
             {
                 var found = dbContext.Database.SqlQuery<BasicUser>(
-                    "select username, real_name as realname, blab_name as blabname, is_admin as isadmin from users where "
-                    + "username = @username and password = @password;",
-                    new SqlParameter("username", userName),
-                    new SqlParameter("password", Md5Hash(passWord))).ToList();
+                    "select password, username, real_name as realname, blab_name as blabname, is_admin as isadmin from users where "
+                    + "username = @username;",
+                    new SqlParameter("username", userName)).ToList();
 
-                if (found.Count != 0)
+                if (found.Count != 0 && BCrypt.Net.BCrypt.Verify(passWord, found[0].Password))
                 {
                     Session["username"] = userName;
                     return found[0];
