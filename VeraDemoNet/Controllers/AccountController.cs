@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Hosting;
 using System.Web.Mvc;
+using System.Web.SessionState;
 using Newtonsoft.Json;
 using VeraDemoNet.DataAccess;
 using VeraDemoNet.Models;
@@ -41,9 +42,8 @@ namespace VeraDemoNet.Controllers
                 return GetLogOut();
             }
 
-
             var userDetailsCookie = Request.Cookies[COOKIE_NAME];
-
+            
             if (userDetailsCookie == null || userDetailsCookie.Value.Length == 0)
             {
                 logger.Info("No user cookie");
@@ -52,6 +52,13 @@ namespace VeraDemoNet.Controllers
                 ViewBag.ReturnUrl = ReturnUrl;
                 return View();
             }
+
+            userDetailsCookie.HttpOnly = true;
+            userDetailsCookie.Secure = true;
+
+            SessionIDManager sm = new SessionIDManager();
+            string newSessionId = sm.CreateSessionID(System.Web.HttpContext.Current);
+            sm.SaveSessionID(System.Web.HttpContext.Current, newSessionId, out _, out _);
 
             logger.Info("User details were remembered");
             var unencodedUserDetails = Convert.FromBase64String(userDetailsCookie.Value);
