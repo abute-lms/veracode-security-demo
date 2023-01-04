@@ -16,6 +16,7 @@ using System.Web.Mvc;
 using System.Web.SessionState;
 using Newtonsoft.Json;
 using VeraDemoNet.DataAccess;
+using VeraDemoNet.Helpers;
 using VeraDemoNet.Models;
 
 namespace VeraDemoNet.Controllers  
@@ -35,7 +36,7 @@ namespace VeraDemoNet.Controllers
         [HttpGet, ActionName("Login")]
         public ActionResult GetLogin(string ReturnUrl = "")
         {
-            logger.Info("Login page visited: " + ReturnUrl);
+            logger.Info("Login page visited: " + ReturnUrl.EncodeLog());
 
             if (IsUserLoggedIn())
             {
@@ -73,7 +74,7 @@ namespace VeraDemoNet.Controllers
                 /* START BAD CODE */
                 deserializedUser = binaryFormatter.Deserialize(memoryStream) as CustomSerializeModel;
                 /* END BAD CODE */
-                logger.Info("User details were retrieved for user: " + deserializedUser.UserName);
+                logger.Info("User details were retrieved for user: " + deserializedUser.UserName.EncodeLog());
             }
 
             Session["username"] = deserializedUser.UserName;
@@ -288,8 +289,7 @@ namespace VeraDemoNet.Controllers
                 }
 
                 newFilename += extension;
-
-                logger.Info("Saving new profile image: " + newFilename);
+                logger.Info("Saving new profile image: " + newFilename.EncodeLog());
 
                 file.SaveAs(newFilename);
             }
@@ -312,7 +312,7 @@ namespace VeraDemoNet.Controllers
         [AllowAnonymous]
         public ActionResult GetPasswordHint(string userName)
         {
-            logger.Info("Entering password-hint with username: " + userName);
+            logger.Info("Entering password-hint with username: " + userName.EncodeLog());
 		
             if (string.IsNullOrEmpty(userName))
             {
@@ -449,8 +449,7 @@ namespace VeraDemoNet.Controllers
             {
                 return RedirectToAction("Access Denied", "Error");
             }
-
-            logger.Info("Fetching profile image: " + imagePath);
+            logger.Info("Fetching profile image: " + imagePath.EncodeLog());
 
 	        return File(imagePath, System.Net.Mime.MediaTypeNames.Application.Octet);
         }
